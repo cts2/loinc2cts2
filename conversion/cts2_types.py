@@ -44,6 +44,13 @@ class ChangeSet(Cts2Type):
 
 
 class Entity(Cts2Type):
+    statuses_map = {
+        "ACTIVE": "ACTIVE",
+        "TRIAL": "ACTIVE",
+        "DISCOURAGED": "ACTIVE",
+        "DEPRECATED": "INACTIVE"
+    }
+
     def __init__(self, about, name, namespace, code_system, code_system_version):
         self.entity = {
             "entityDescription": {
@@ -71,6 +78,19 @@ class Entity(Cts2Type):
                 }
             }
         }
+
+    def add_description(self, description, type="PREFERRED"):
+        if 'designation' not in self.entity['entityDescription']['namedEntity']:
+            self.entity['entityDescription']['namedEntity']['designation'] = []
+        self.entity['entityDescription']['namedEntity']['designation'].append({"designationRole":type, "value":description})
+
+    def set_status(self, status="ACTIVE"):
+        cts2_status = self.statuses_map[status]
+        self.entity['entityDescription']['namedEntity']['entryState'] = cts2_status
+
+        if not cts2_status == "ACTIVE":
+            status_ref = {'content': status}
+            self.entity['entityDescription']['namedEntity']['status'] = status_ref
 
     def as_dict(self):
         return self.entity

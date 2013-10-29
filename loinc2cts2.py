@@ -19,7 +19,7 @@ def put_changeset(change_set):
 
 change_set = converter.create_changeset()
 
-reader = LoincReader("tests/loinc.csv")
+reader = LoincReader("test/loinc.csv")
 
 
 def row_callback(row):
