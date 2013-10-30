@@ -52,6 +52,7 @@ class Entity(Cts2Type):
     }
 
     def __init__(self, about, name, namespace, code_system, code_system_version):
+        self.namespace = namespace
         self.entity = {
             "entityDescription": {
                 "namedEntity": {
@@ -83,6 +84,18 @@ class Entity(Cts2Type):
         if 'designation' not in self.entity['entityDescription']['namedEntity']:
             self.entity['entityDescription']['namedEntity']['designation'] = []
         self.entity['entityDescription']['namedEntity']['designation'].append({"designationRole":type, "value":description})
+
+    def add_parent(self, parent_name, parent_namespace, parent_uri):
+        if 'parent' not in self.entity['entityDescription']['namedEntity']:
+            self.entity['entityDescription']['namedEntity']['parent'] = []
+
+        self.entity['entityDescription']['namedEntity']['parent'].append(
+            {
+                "uri":parent_uri,
+                "name":parent_name,
+                "namespace":parent_namespace
+            }
+        )
 
     def set_status(self, status="ACTIVE"):
         cts2_status = self.statuses_map[status]

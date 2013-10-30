@@ -19,13 +19,29 @@ def put_changeset(change_set):
 
 change_set = converter.create_changeset()
 
-reader = LoincReader("test/loinc.csv")
+hierarchy_reader = LoincReader("test/data/loinc-hierarchy.csv")
+
+child_parent = {}
+
+def hierarchy_row_callback(row):
+    child = row['CODE'].replace('LP','')
+    parent = row['IMMEDIATE_PARENT'].replace('LP','')
+    if child not in child_parent:
+        child_parent[child] = set()
+
+    child_parent[child].add(parent)
+
+hierarchy_reader.read(hierarchy_row_callback)
 
 
-def row_callback(row):
-    change_set.add_member(converter.row2entity(row, uri_converter.umls_uri, "LNC", "LNC-244"))
+entity_reader = LoincReader("test/data/loinc.csv")
+
+def entity_row_callback(row):
+    change_set.add_member(converter.row2entity(row, uri_converter.umls_uri, "LNC", "LNC-244", child_parent))
 
 
-reader.read(row_callback)
+entity_reader.read(entity_row_callback)
 
-#put_changeset(change_set)
+print change_set.as_dict()
+
+put_changeset(change_set)

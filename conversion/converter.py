@@ -3,7 +3,7 @@ import uuid
 from cts2_types import *
 
 
-def row2entity(row, about_fn, code_system, code_system_version):
+def row2entity(row, about_fn, code_system, code_system_version, child_parent):
     name = row['LOINC_NUM']
     description = row['COMPONENT']
     short_name = row['SHORTNAME']
@@ -17,6 +17,10 @@ def row2entity(row, about_fn, code_system, code_system_version):
     entity.add_description(short_name, "ALTERNATIVE")
     entity.add_description(long_common_name, "ALTERNATIVE")
     entity.set_status(status)
+
+    if name in child_parent:
+        for parent in child_parent[name]:
+            entity.add_parent(parent, code_system, about_fn(parent))
 
     return entity
 

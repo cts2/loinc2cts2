@@ -21,7 +21,7 @@ class EntityTest(unittest.TestCase):
 
         entity = []
         def test_row_callback(row):
-            entity.append(converter.row2entity(row, lambda(x) : x, "LNC", "LNC-244"))
+            entity.append(converter.row2entity(row, lambda(x) : x, "LNC", "LNC-244", {}))
 
         reader.read(test_row_callback)
 
