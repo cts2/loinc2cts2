@@ -44,4 +44,4 @@ entity_reader.read(entity_row_callback)
 
 print change_set.as_dict()
 
-put_changeset(change_set)
+#put_changeset(change_set)

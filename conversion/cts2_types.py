@@ -97,6 +97,25 @@ class Entity(Cts2Type):
             }
         )
 
+    def add_property(self, property_name, property_namespace, property_uri, property_value):
+        if 'property' not in self.entity['entityDescription']['namedEntity']:
+            self.entity['entityDescription']['namedEntity']['property'] = []
+
+        self.entity['entityDescription']['namedEntity']['property'].append(
+            {
+                "predicate" : {
+                    "uri":property_uri,
+                    "name":property_name,
+                    "namespace":property_namespace
+                },
+                "value": [
+                    {
+                        "literal": {"value": property_value}
+                    }
+                ]
+            }
+        )
+
     def set_status(self, status="ACTIVE"):
         cts2_status = self.statuses_map[status]
         self.entity['entityDescription']['namedEntity']['entryState'] = cts2_status

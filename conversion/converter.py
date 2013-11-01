@@ -22,6 +22,9 @@ def row2entity(row, about_fn, code_system, code_system_version, child_parent):
         for parent in child_parent[name]:
             entity.add_parent(parent, code_system, about_fn(parent))
 
+    for property in [item for item in row if item not in ['LOINC_NUM','COMPONENT','SHORTNAME','LONG_COMMON_NAME', 'STATUS']]:
+        entity.add_property(property,code_system,about_fn(property),row[property])
+
     return entity
 
 

@@ -67,3 +67,8 @@ class EntityTest(unittest.TestCase):
 
         status = entity['entityDescription']['namedEntity']['entryState']
         self.assertEquals("ACTIVE", status)
+
+    def test_convert_entity_properties(self):
+        entity = self._do_test_convert_entity().as_dict()
+
+        self.assertTrue(len(entity['entityDescription']['namedEntity']['property']) > 0)
