@@ -81,6 +81,8 @@ class Entity(Cts2Type):
         }
 
     def add_description(self, description, type="PREFERRED"):
+        if not description:
+            return
         if 'designation' not in self.entity['entityDescription']['namedEntity']:
             self.entity['entityDescription']['namedEntity']['designation'] = []
         self.entity['entityDescription']['namedEntity']['designation'].append({"designationRole":type, "value":description})
@@ -97,7 +99,25 @@ class Entity(Cts2Type):
             }
         )
 
+    def add_note(self, note_value):
+        if not note_value:
+            return
+        if 'note' not in self.entity['entityDescription']['namedEntity']:
+            self.entity['entityDescription']['namedEntity']['note'] = []
+
+        self.entity['entityDescription']['namedEntity']['note'].append({"value":note_value})
+
+    def add_example(self, example_value):
+        if not example_value:
+            return
+        if 'example' not in self.entity['entityDescription']['namedEntity']:
+            self.entity['entityDescription']['namedEntity']['example'] = []
+
+        self.entity['entityDescription']['namedEntity']['note'].append({"value":example_value})
+
     def add_property(self, property_name, property_namespace, property_uri, property_value):
+        if not property_value:
+            return
         if 'property' not in self.entity['entityDescription']['namedEntity']:
             self.entity['entityDescription']['namedEntity']['property'] = []
 

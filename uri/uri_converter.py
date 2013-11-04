@@ -1,1 +1,1 @@
-def umls_uri(name): return "http://nlm.nih.gov/sab/%s" % name
+def umls_uri(name): return "http://umls.nih.gov/sab/%s" % name

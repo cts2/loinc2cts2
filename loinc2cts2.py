@@ -16,9 +16,6 @@ def put_changeset(change_set):
                           data=json.dumps(change_set.as_dict()), headers=headers)
     print response
 
-
-change_set = converter.create_changeset()
-
 hierarchy_reader = LoincReader("test/data/loinc-hierarchy.csv")
 
 child_parent = {}
@@ -36,12 +33,21 @@ hierarchy_reader.read(hierarchy_row_callback)
 
 entity_reader = LoincReader("test/data/loinc.csv")
 
+change_set = converter.create_changeset()
+
+count = 0
+
 def entity_row_callback(row):
+    global count, change_set
     change_set.add_member(converter.row2entity(row, uri_converter.umls_uri, "LNC", "LNC-244", child_parent))
+    count += 1
+    if count > 1000:
+        print "Putting changeset."
+        put_changeset(change_set)
+        count = 0
+        change_set = converter.create_changeset()
 
 
 entity_reader.read(entity_row_callback)
 
-print change_set.as_dict()
-
-#put_changeset(change_set)
+put_changeset(change_set)
