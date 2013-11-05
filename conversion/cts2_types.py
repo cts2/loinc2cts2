@@ -113,7 +113,7 @@ class Entity(Cts2Type):
         if 'example' not in self.entity['entityDescription']['namedEntity']:
             self.entity['entityDescription']['namedEntity']['example'] = []
 
-        self.entity['entityDescription']['namedEntity']['note'].append({"value":example_value})
+        self.entity['entityDescription']['namedEntity']['example'].append({"value":example_value})
 
     def add_property(self, property_name, property_namespace, property_uri, property_value):
         if not property_value:
@@ -123,10 +123,10 @@ class Entity(Cts2Type):
 
         self.entity['entityDescription']['namedEntity']['property'].append(
             {
-                "predicate" : {
-                    "uri":property_uri,
-                    "name":property_name,
-                    "namespace":property_namespace
+                "predicate": {
+                    "uri": property_uri,
+                    "name": property_name,
+                    "namespace": property_namespace
                 },
                 "value": [
                     {
