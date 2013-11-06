@@ -40,7 +40,7 @@ class MAEntityDescription(object):
         e.entityID = core_api.ScopedEntityName()
         e.entityID.namespace = nsFor(row.code)
         e.entityID.name = row.code
-        e.designation = mahcsv(version)
+        e.describingCodeSystemVersion = mahcsv(version)
         e.designation.append(Designation(row.text))
 
         et = core_api.URIAndEntityName()
