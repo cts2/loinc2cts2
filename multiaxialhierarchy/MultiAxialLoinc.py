@@ -57,10 +57,10 @@ def main(args):
             rval = ChangeSetWrapper(map(lambda e: MAEntityDescription(e, args[3]), filter(lambda e:e.code.startswith('LP'), content)))
         else:
             rval = ChangeSetWrapper(map(lambda e: MAAssociation(e,args[3], content.parentOf(e)), filter(lambda e:e.parent, content)))
-        if len(args) < 5 or args[4] == '-p':
-            print prettyxml(rval)
-        else:
+        if len(args) < 5 or args[4] != '-p':
             print rval.toxml()
+        else:
+            print prettyxml(rval)
     else:
         print "Usage: python MultiAxialLoinc.py (-e|-a) <Multi axial csv file> <LOINC version number>"
 
