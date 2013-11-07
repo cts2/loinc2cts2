@@ -26,45 +26,8 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-import sys
+import itertools
 
-from utils.prettyxml import prettyxml
-from ChangeSet import ChangeSetWrapper
-from MAEntityDescription import MAEntityDescription
-from MAAssociation import MAAssociation
-from Skipper import skip
-
-class MALoincRow(object):
-    def __init__(self, line):
-        self.path, self.seq, self.parent, self.code, self.text = line.strip().split(',',4)
-
-
-class MultiAxialLoinc(object):
-    def __init__(self, filename):
-        self.entries = {row.code:row for row in map(MALoincRow, skip(1,open(filename)))}
-
-    def __iter__(self):
-        return self.entries.itervalues()
-
-    def parentOf(self, e):
-        return self.entries.get(e.parent)
-
-
-def main(args):
-    if len(args) in (4,5) and args[1] in ('-e', '-a'):
-        content = MultiAxialLoinc(args[2])
-
-        if args[1] == '-e':
-            rval = ChangeSetWrapper(map(lambda e: MAEntityDescription(e, args[3]), filter(lambda e:e.code.startswith('LP'), content)))
-        else:
-            rval = ChangeSetWrapper(map(lambda e: MAAssociation(e,args[3], content.parentOf(e)), filter(lambda e:e.parent, content)))
-        if len(args) < 5 or args[4] != '-p':
-            print rval.toxml()
-        else:
-            print prettyxml(rval)
-    else:
-        print "Usage: python MultiAxialLoinc.py (-e|-a) <Multi axial csv file> <LOINC version number>"
-
-
-if __name__ == '__main__':
-    main(sys.argv)
+def skip(n,iter):
+   i = itertools.repeat(False, n)
+   return filter(lambda _: next(i, True), iter)
