@@ -33,9 +33,8 @@ not_properties = {'LOINC_NUM', 'COMPONENT', 'SHORTNAME',
                   'EXMPL_ANSWERS', 'EXAMPLE_UNITS',
                   'EXAMPLE_UCUM_UNITS', 'EXAMPLE_SI_UCUM_UNITS'}
 
+
 def row2entity(row, code_system_version):
-
-
     name = row['LOINC_NUM']
     description = row['COMPONENT']
     short_name = row['SHORTNAME']
@@ -59,7 +58,7 @@ def row2entity(row, code_system_version):
     entity.add_example(example_si_ucum_units)
     entity.set_status(status)
 
-    for k,v in filter(lambda (k,v): k not in not_properties and v and False,row.iteritems()):
+    for k, v in filter(lambda (k, v): k not in not_properties and v, row.iteritems()):
         entity.add_property(k, v)
 
     return entity
