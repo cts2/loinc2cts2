@@ -28,10 +28,13 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 from cts2_types import *
 
+not_properties = {'LOINC_NUM', 'COMPONENT', 'SHORTNAME',
+                  'LONG_COMMON_NAME', 'STATUS', 'COMMENTS',
+                  'EXMPL_ANSWERS', 'EXAMPLE_UNITS',
+                  'EXAMPLE_UCUM_UNITS', 'EXAMPLE_SI_UCUM_UNITS'}
 
 def row2entity(row, code_system_version):
-    not_properties = set(['LOINC_NUM', 'COMPONENT', 'SHORTNAME', 'LONG_COMMON_NAME', 'STATUS', 'COMMENTS',
-                      'EXMPL_ANSWERS', 'EXAMPLE_UNITS', 'EXAMPLE_UCUM_UNITS', 'EXAMPLE_SI_UCUM_UNITS'])
+
 
     name = row['LOINC_NUM']
     description = row['COMPONENT']
@@ -56,7 +59,7 @@ def row2entity(row, code_system_version):
     entity.add_example(example_si_ucum_units)
     entity.set_status(status)
 
-    for property in [item for item in row if (item not in not_properties and row[item])]:
-        entity.add_property(property, row[property])
+    for k,v in filter(lambda (k,v): k not in not_properties and v and False,row.iteritems()):
+        entity.add_property(k, v)
 
     return entity
