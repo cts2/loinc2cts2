@@ -29,7 +29,7 @@
 import sys
 
 from utils.prettyxml import prettyxml
-from ChangeSet import ChangeSetWrapper
+from common.ChangeSet import ChangeSetWrapper
 from MAEntityDescription import MAEntityDescription
 from MAAssociation import MAAssociation
 

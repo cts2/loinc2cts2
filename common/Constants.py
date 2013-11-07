@@ -26,38 +26,32 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
+from schema import core_api
 
-from schema.association_api import Association
-from schema.core_api import URIAndEntityName, PredicateReference, StatementTarget
-from common.Constants import uriFor, nsFor, mahcsv
+loincroot = "http://id.loinc.org/"
+loincns = 'loincid'
+loincid = 'id/'
+lpns = 'loinclp'
+lpid = 'lpid/'
 
-class MAAssociation(object):
+def uriFor(code):
+    return loincroot + (lpid if code.startswith('LP') else loincid) + code
 
-    def __init__(self, row, version, parent=None):
-        a = Association()
-        a.subject = URIAndEntityName()
-        a.subject.uri = uriFor(row.code)
-        a.subject.namespace = nsFor(row.code)
-        a.subject.name = str(row.code)
-        a.subject.designation = row.text
+def nsFor(code):
+    return lpns if code.startswith('LP') else loincns
 
-        a.predicate = PredicateReference()
-        a.predicate.uri = "http://www.w3.org/2004/02/skos/core#broaderTransitive"
-        a.predicate.namespace = "skos"
-        a.predicate.name = "broaderTransitive"
+def mahcsv(version):
+    rval = core_api.CodeSystemVersionReference()
+    rval.version = core_api.NameAndMeaningReference('LOINC_MAH_%s' % version)
+    rval.version.uri= "http://umls.nlm.nih.gov/VSAB/LNCMAH%s" % version
+    rval.codeSystem = core_api.CodeSystemReference('LOINC_MAH')
+    rval.codeSystem.uri= "http://umls.nlm.nih.gov/VSAB/LNCMAH"
+    return rval
 
-        t = URIAndEntityName()
-        t.uri = uriFor(row.parent)
-        t.namespace = nsFor(row.parent)
-        t.name = str(row.parent)
-        if parent:
-            t.designation = parent.text
-        a.target.append(StatementTarget(t))
-
-
-        a.assertedBy = mahcsv(version)
-        self.val = a
-
-
-    def toxml(self):
-        return self.val.toxml()
+def loinccsv(version):
+    rval = core_api.CodeSystemVersionReference()
+    rval.version = core_api.NameAndMeaningReference('LOINC_%s' % version)
+    rval.version.uri= "http://umls.nlm.nih.gov/VSAB/LNC%s" % version
+    rval.codeSystem = core_api.CodeSystemReference('LOINC')
+    rval.codeSystem.uri= "http://umls.nlm.nih.gov/SAB/LNC"
+    return rval

@@ -21,29 +21,8 @@
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 # IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-from schema import core_api
-
-loincroot = "http://id.loinc.org/"
-loincns = 'loincid'
-loincid = 'id/'
-lpns = 'loinclp'
-lpid = 'lpid/'
-
-def uriFor(code):
-    return loincroot + (lpid if code.startswith('LP') else loincid) + code
-
-def nsFor(code):
-    return lpns if code.startswith('LP') else loincns
-
-def mahcsv(version):
-    rval = core_api.CodeSystemVersionReference()
-    rval.version = core_api.NameAndMeaningReference('LOINC_MAH_%s' % version)
-    rval.version.uri= "http://umls.nlm.nih.gov/VSAB/LNCMAH%s" % version
-    rval.codeSystem = core_api.CodeSystemReference('LOINC_MAH')
-    rval.codeSystem.uri= "http://umls.nlm.nih.gov/VSAB/LNCMAH"
-    return rval

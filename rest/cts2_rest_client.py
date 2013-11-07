@@ -21,43 +21,16 @@
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 # IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
+import requests
 
-from schema.association_api import Association
-from schema.core_api import URIAndEntityName, PredicateReference, StatementTarget
-from common.Constants import uriFor, nsFor, mahcsv
-
-class MAAssociation(object):
-
-    def __init__(self, row, version, parent=None):
-        a = Association()
-        a.subject = URIAndEntityName()
-        a.subject.uri = uriFor(row.code)
-        a.subject.namespace = nsFor(row.code)
-        a.subject.name = str(row.code)
-        a.subject.designation = row.text
-
-        a.predicate = PredicateReference()
-        a.predicate.uri = "http://www.w3.org/2004/02/skos/core#broaderTransitive"
-        a.predicate.namespace = "skos"
-        a.predicate.name = "broaderTransitive"
-
-        t = URIAndEntityName()
-        t.uri = uriFor(row.parent)
-        t.namespace = nsFor(row.parent)
-        t.name = str(row.parent)
-        if parent:
-            t.designation = parent.text
-        a.target.append(StatementTarget(t))
-
-
-        a.assertedBy = mahcsv(version)
-        self.val = a
-
-
-    def toxml(self):
-        return self.val.toxml()
+def put_changeset(base_cts2_url, change_set):
+    client = requests.session()
+    headers = {'content-type': 'application/xml'}
+    response = client.put('%s/changeset/%s' % (base_cts2_url, change_set.get_changeset().changeSetURI),
+                          data=change_set.toxml(), headers=headers)
+    print response

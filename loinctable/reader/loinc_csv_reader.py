@@ -21,40 +21,22 @@
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 # IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-import uuid
-import datetime
-
-from schema.updates_api import ChangeSet, ChangeableResource
-from schema.association_api import Association_
-from schema.entity_api import EntityDescription_
+import csv
 
 
-class ChangeSetWrapper(object):
+class LoincReader:
 
-    def __init__(self, contents):
-        self.cs = ChangeSet()
-        self.cs.changeSetURI = 'urn:uuid:%s' % uuid.uuid1()
-        self.cs.creationDate = datetime.datetime.now().isoformat()
-        idx = 1
-        for e in contents:
-            cr = ChangeableResource()
-            if isinstance(e.val, EntityDescription_):
-                cr.entityDescription = e.val
-            elif isinstance(e.val, Association_):
-                cr.association = e.val
-            else:
-                assert False, "Unknown object type"
-            cr.entryOrder = idx
-            idx += 1
-            self.cs.append(cr)
+    def __init__(self, csv_path):
+        self.csv_path = csv_path
 
-
-    def toxml(self):
-        return self.cs.toxml()
-
+    def read(self, row_callback):
+        with open(self.csv_path, 'rb') as csvfile:
+            csvreader = csv.DictReader(csvfile, delimiter=',')
+            for row in csvreader:
+                yield row_callback(row)
 

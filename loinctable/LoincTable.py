@@ -21,43 +21,37 @@
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 # IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-
-from schema.association_api import Association
-from schema.core_api import URIAndEntityName, PredicateReference, StatementTarget
-from common.Constants import uriFor, nsFor, mahcsv
-
-class MAAssociation(object):
-
-    def __init__(self, row, version, parent=None):
-        a = Association()
-        a.subject = URIAndEntityName()
-        a.subject.uri = uriFor(row.code)
-        a.subject.namespace = nsFor(row.code)
-        a.subject.name = str(row.code)
-        a.subject.designation = row.text
-
-        a.predicate = PredicateReference()
-        a.predicate.uri = "http://www.w3.org/2004/02/skos/core#broaderTransitive"
-        a.predicate.namespace = "skos"
-        a.predicate.name = "broaderTransitive"
-
-        t = URIAndEntityName()
-        t.uri = uriFor(row.parent)
-        t.namespace = nsFor(row.parent)
-        t.name = str(row.parent)
-        if parent:
-            t.designation = parent.text
-        a.target.append(StatementTarget(t))
+from loinctable.reader.loinc_csv_reader import LoincReader
+from loinctable.conversion import converter
+from common.ChangeSet import ChangeSetWrapper
 
 
-        a.assertedBy = mahcsv(version)
-        self.val = a
+class LoincTable():
+    def __init__(self, csv, loinc_version):
+        self.csv = csv
+        self.loinc_version = loinc_version
 
 
-    def toxml(self):
-        return self.val.toxml()
+    def to_cts2(self, changeset_size=1000):
+        entity_reader = LoincReader(self.csv)
+
+        def entity_row_callback(row):
+            return converter.row2entity(row, self.loinc_version)
+
+        changeset = ChangeSetWrapper()
+
+        count = 0
+        for entity in entity_reader.read(entity_row_callback):
+            changeset.add_member(entity)
+            count += 1
+            if count > changeset_size:
+                yield changeset
+                count = 0
+                changeset = ChangeSetWrapper()
+
+        yield changeset

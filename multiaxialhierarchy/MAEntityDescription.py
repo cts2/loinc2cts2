@@ -28,7 +28,7 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 from schema import entity_api, core_api
 from model.Designation import Designation
-from Constants import nsFor, uriFor, mahcsv
+from common.Constants import nsFor, uriFor, mahcsv
 
 
 class MAEntityDescription(object):

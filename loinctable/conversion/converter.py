@@ -21,43 +21,42 @@
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 # IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-
-from schema.association_api import Association
-from schema.core_api import URIAndEntityName, PredicateReference, StatementTarget
-from common.Constants import uriFor, nsFor, mahcsv
-
-class MAAssociation(object):
-
-    def __init__(self, row, version, parent=None):
-        a = Association()
-        a.subject = URIAndEntityName()
-        a.subject.uri = uriFor(row.code)
-        a.subject.namespace = nsFor(row.code)
-        a.subject.name = str(row.code)
-        a.subject.designation = row.text
-
-        a.predicate = PredicateReference()
-        a.predicate.uri = "http://www.w3.org/2004/02/skos/core#broaderTransitive"
-        a.predicate.namespace = "skos"
-        a.predicate.name = "broaderTransitive"
-
-        t = URIAndEntityName()
-        t.uri = uriFor(row.parent)
-        t.namespace = nsFor(row.parent)
-        t.name = str(row.parent)
-        if parent:
-            t.designation = parent.text
-        a.target.append(StatementTarget(t))
+from cts2_types import *
 
 
-        a.assertedBy = mahcsv(version)
-        self.val = a
+def row2entity(row, code_system_version):
+    not_properties = set(['LOINC_NUM', 'COMPONENT', 'SHORTNAME', 'LONG_COMMON_NAME', 'STATUS', 'COMMENTS',
+                      'EXMPL_ANSWERS', 'EXAMPLE_UNITS', 'EXAMPLE_UCUM_UNITS', 'EXAMPLE_SI_UCUM_UNITS'])
 
+    name = row['LOINC_NUM']
+    description = row['COMPONENT']
+    short_name = row['SHORTNAME']
+    long_common_name = row['LONG_COMMON_NAME']
+    status = row['STATUS']
+    comments = row['COMMENTS']
+    example_answers = row['EXMPL_ANSWERS']
+    example_units = row['EXAMPLE_UNITS']
+    example_ucum_units = row['EXAMPLE_UCUM_UNITS']
+    example_si_ucum_units = row['EXAMPLE_SI_UCUM_UNITS']
+    copyright = row['EXTERNAL_COPYRIGHT_NOTICE']
 
-    def toxml(self):
-        return self.val.toxml()
+    entity = EntityWrapper(name=name, code_system_version=code_system_version)
+    entity.add_designation(description)
+    entity.add_designation(short_name, False)
+    entity.add_designation(long_common_name, False)
+    entity.add_note(comments)
+    entity.add_example(example_answers)
+    entity.add_example(example_units)
+    entity.add_example(example_ucum_units)
+    entity.add_example(example_si_ucum_units)
+    entity.set_status(status)
+
+    for property in [item for item in row if (item not in not_properties and row[item])]:
+        entity.add_property(property, row[property])
+
+    return entity

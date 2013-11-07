@@ -26,38 +26,40 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
+import uuid
+import datetime
 
-from schema.association_api import Association
-from schema.core_api import URIAndEntityName, PredicateReference, StatementTarget
-from common.Constants import uriFor, nsFor, mahcsv
-
-class MAAssociation(object):
-
-    def __init__(self, row, version, parent=None):
-        a = Association()
-        a.subject = URIAndEntityName()
-        a.subject.uri = uriFor(row.code)
-        a.subject.namespace = nsFor(row.code)
-        a.subject.name = str(row.code)
-        a.subject.designation = row.text
-
-        a.predicate = PredicateReference()
-        a.predicate.uri = "http://www.w3.org/2004/02/skos/core#broaderTransitive"
-        a.predicate.namespace = "skos"
-        a.predicate.name = "broaderTransitive"
-
-        t = URIAndEntityName()
-        t.uri = uriFor(row.parent)
-        t.namespace = nsFor(row.parent)
-        t.name = str(row.parent)
-        if parent:
-            t.designation = parent.text
-        a.target.append(StatementTarget(t))
+from schema.updates_api import ChangeSet, ChangeableResource
+from schema.association_api import Association_
+from schema.entity_api import EntityDescription_
 
 
-        a.assertedBy = mahcsv(version)
-        self.val = a
+class ChangeSetWrapper(object):
 
+    def __init__(self, contents=None):
+        self.cs = ChangeSet()
+        self.cs.changeSetURI = 'urn:uuid:%s' % uuid.uuid1()
+        self.cs.creationDate = datetime.datetime.now().isoformat()
+
+        if contents:
+            for e in contents:
+                self.add_member(e)
+
+    def add_member(self, e):
+        cr = ChangeableResource()
+        if isinstance(e.val, EntityDescription_):
+            cr.entityDescription = e.val
+        elif isinstance(e.val, Association_):
+            cr.association = e.val
+        else:
+            assert False, "Unknown object type"
+        cr.entryOrder = len(self.cs.member) + 1
+        self.cs.append(cr)
+
+    def get_changeset(self):
+        return self.cs
 
     def toxml(self):
-        return self.val.toxml()
+        return self.cs.toxml()
+
+

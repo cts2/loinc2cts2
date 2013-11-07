@@ -1,48 +1,49 @@
-import json
+# -*- coding: utf-8 -*-
+# Copyright (c) 2013, Mayo Clinic
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met:
+#
+#     Redistributions of source code must retain the above copyright notice, this
+#     list of conditions and the following disclaimer.
+#
+#     Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+#
+#     Neither the name of the <ORGANIZATION> nor the names of its contributors
+#     may be used to endorse or promote products derived from this software
+#     without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+import argparse
+from loinctable.LoincTable import LoincTable
 
-import requests
+def main(args):
+    parser = argparse.ArgumentParser(description='CTS2 LOINC Converter')
+    parser.add_argument('-ma', help='the LOINC MultiAxial Hierarchy CSV file')
+    parser.add_argument('-lt', help='the LOINC Table CSV file')
+    parser.add_argument('-o',  help='the output directory for CTS2 ChangeSets')
+    parser.add_argument('-url', help='the CTS2 URL to PUT the ChangeSets to')
+    parser.add_argument('<loinc version>', help='the LOINC Version Identifier')
 
-from reader.loinc_csv_reader import LoincReader
-from conversion import converter
+    args = parser.parse_args()
 
-client = requests.session()
-
-def put_changeset(change_set):
-    headers = {'content-type': 'application/json'}
-    response = client.put('http://localhost:8080/cts2/changeset/%s' % change_set.get_uri(),
-                          data=json.dumps(change_set.as_dict()), headers=headers)
-    print response
-
-hierarchy_reader = LoincReader("test/data/loinc-hierarchy.csv")
-
-child_parent = {}
-
-def hierarchy_row_callback(row):
-    child = row['CODE'].replace('LP','')
-    parent = row['IMMEDIATE_PARENT'].replace('LP','')
-    if child not in child_parent:
-        child_parent[child] = set()
-
-    child_parent[child].add(parent)
-
-hierarchy_reader.read(hierarchy_row_callback)
-
-entity_reader = LoincReader("test/data/loinc.csv")
-
-change_set = converter.create_changeset()
-
-count = 0
-
-def entity_row_callback(row):
-    global count, change_set
-    change_set.add_member(converter.row2entity(row, "LNC", "LNC-244", child_parent))
-    count += 1
-    if count > 1000:
-        put_changeset(change_set)
-        count = 0
-        change_set = converter.create_changeset()
+    loinc_table = LoincTable(args.lt)
 
 
-entity_reader.read(entity_row_callback)
-
-put_changeset(change_set)
+if __name__ == '__main__':
+    #main(sys.argv)
+    for changeset_wrapper in LoincTable("test/data/loinc.csv", '224').to_cts2():
+        # Iterate through just to check for timing.
+        print changeset_wrapper
