@@ -46,7 +46,7 @@ class TestLoincReader:
 class EntityTest(unittest.TestCase):
 
     def _do_test_convert_entity(self):
-        reader = TestLoincReader("data/loinc.csv")
+        reader = TestLoincReader("../data/loinc.csv")
 
         entity = []
         def test_row_callback(row):

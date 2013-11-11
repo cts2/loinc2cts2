@@ -102,9 +102,8 @@ class EntityWrapper(Cts2TypeWrapper):
         except pyxb.exceptions_.MixedContentError:
             print "ERROR Loading Property: {name = '%s', value = '%s'}" % (property_name, property_value)
 
-
     def set_status(self, status="ACTIVE"):
-        pass
+        self.val.classDescription.entryState = self.statuses_map[status]
 
     def toxml(self):
         return self.val.toxml()
