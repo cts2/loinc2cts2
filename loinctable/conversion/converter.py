@@ -27,6 +27,7 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 from cts2_types import *
+import time
 
 not_properties = {'LOINC_NUM', 'COMPONENT', 'SHORTNAME',
                   'LONG_COMMON_NAME', 'STATUS', 'COMMENTS',
@@ -35,6 +36,8 @@ not_properties = {'LOINC_NUM', 'COMPONENT', 'SHORTNAME',
 
 
 def row2entity(row, code_system_version):
+    #start = time.clock()
+
     name = row['LOINC_NUM']
     description = row['COMPONENT']
     short_name = row['SHORTNAME']
@@ -60,5 +63,10 @@ def row2entity(row, code_system_version):
 
     for k, v in filter(lambda (k, v): k not in not_properties and v, row.iteritems()):
         entity.add_property(k, v)
+
+    #elapsed = time.clock()
+    #elapsed = elapsed - start
+
+    #print "Time spent is: ", elapsed
 
     return entity
