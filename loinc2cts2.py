@@ -67,10 +67,10 @@ def main(args):
     for changeset_wrapper in loinc_table.to_cts2():
         _write_change_set(changeset_wrapper, output_dir)
 
-    content = MultiAxialLoinc(args.ma)
+    content = MultiAxialLoinc.MultiAxialLoinc(args.ma)
 
-    entities = ChangeSetWrapper(map(lambda e: MAEntityDescription(e, loinc_version), filter(lambda e:e.code.startswith('LP'), content)))
-    associations = ChangeSetWrapper(map(lambda e: MAAssociation(e, loinc_version, content.parentOf(e)), filter(lambda e:e.parent, content)))
+    entities = ChangeSetWrapper(map(lambda e: MAEntityDescription.MAEntityDescription(e, loinc_version), filter(lambda e:e.code.startswith('LP'), content)))
+    associations = ChangeSetWrapper(map(lambda e: MAAssociation.MAAssociationcd (e, loinc_version, content.parentOf(e)), filter(lambda e:e.parent, content)))
 
     map(lambda x: _write_change_set(x, output_dir), [entities, associations])
 

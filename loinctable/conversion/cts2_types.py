@@ -26,22 +26,19 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-import abc
 
-from schema import entity_api, core_api
-from schema.core_api import Example, Property, Comment, PredicateReference
-from model.Designation import Designation
+
+from schema.entity_api import EntityDescription_, ClassDescription
+from schema.codesystem_api import CodeSystemCatalogEntry_
+from schema.core_api import Example, Property, Comment, PredicateReference, ScopedEntityName, URIAndEntityName, \
+    StatementTarget, Note, EntryDescription
+from model.Designation import Designation, OpaqueData
 import pyxb
 from common.Constants import uriFor, nsFor, loinccsv
 
 
-class Cts2TypeWrapper():
-    @abc.abstractmethod
-    def toxml(self):
-        raise NotImplementedError("Please implement the 'toxml' method on all Cts2TypeWrappers.")
 
-
-class EntityWrapper(Cts2TypeWrapper):
+class EntityWrapper(EntityDescription_):
     statuses_map = {
         "ACTIVE": "ACTIVE",
         "TRIAL": "ACTIVE",
@@ -50,42 +47,35 @@ class EntityWrapper(Cts2TypeWrapper):
     }
 
     def __init__(self, name, code_system_version):
-        e = entity_api.ClassDescription()
+        EntityDescription_.__init__(self)
+        e = ClassDescription()
         e.about = uriFor(name)
-        e.entityID = core_api.ScopedEntityName()
+        e.entityID = ScopedEntityName()
         e.entityID.namespace = nsFor(name)
         e.entityID.name = name
         e.describingCodeSystemVersion = loinccsv(code_system_version)
 
-        et = core_api.URIAndEntityName()
+        et = URIAndEntityName()
         et.uri = 'http://www.w3.org/2002/07/owl#Class'
         et.namespace = 'owl'
         et.name = 'Class'
         e.entityType.append(et)
-        self.val = entity_api.EntityDescription()
-        self.val.classDescription = e
-
-    def get_entity(self):
-        return self.val
+        self.classDescription = e
 
     def add_designation(self, description, is_preferred=True):
         if not description:
             return
-        self.val.classDescription.designation.append(Designation(description, is_preferred))
+        self.classDescription.designation.append(Designation(description, is_preferred))
 
     def add_note(self, note_value):
         if not note_value:
             return
-        comment = Comment()
-        comment.value_ = note_value
-        self.val.classDescription.note.append(comment)
+        self.classDescription.note.value_ = OpaqueData(note_value)
 
     def add_example(self, example_value):
         if not example_value:
             return
-        example = Example()
-        example.value_ = example_value
-        self.val.classDescription.example.append(example)
+        self.classDescription.example.value_ = OpaqueData(example_value)
 
     def add_property(self, property_name, property_value):
         if not property_value:
@@ -97,21 +87,18 @@ class EntityWrapper(Cts2TypeWrapper):
             predicate.namespace = nsFor(property_name)
             predicate.uri = uriFor(property_name)
             property.predicate = predicate
-            property.value_ = property_value
-            self.val.classDescription.property_.append(property)
+            st = StatementTarget()
+            st.literal = OpaqueData(property_value)
+            property.value_.append(st)
+            self.classDescription.property_.append(property)
         except pyxb.exceptions_.MixedContentError:
             print "ERROR Loading Property: {name = '%s', value = '%s'}" % (property_name, property_value)
 
     def set_status(self, status="ACTIVE"):
-        self.val.classDescription.entryState = self.statuses_map[status]
-
-    def toxml(self):
-        return self.val.toxml()
+        self.classDescription.entryState = self.statuses_map[status]
 
 
-class CodeSystemWrapper(Cts2TypeWrapper):
+
+class CodeSystemWrapper(CodeSystemCatalogEntry_):
     def __init__(self, about, name):
-        pass
-
-    def toxml(self):
-        return self.val.toxml()
+        CodeSystemCatalogEntry_.__init__(self)
