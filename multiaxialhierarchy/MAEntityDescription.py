@@ -31,10 +31,11 @@ from model.Designation import Designation
 from common.Constants import nsFor, uriFor, mahcsv
 
 
-class MAEntityDescription(object):
+class MAEntityDescription(entity_api.EntityDescription_):
     """ Build an entity description out of a LOINC Loinc Part object
     """
     def __init__(self, row, version):
+        entity_api.EntityDescription_.__init__(self)
         e = entity_api.ClassDescription()
         e.about = uriFor(row.code)
         e.entityID = core_api.ScopedEntityName()
@@ -48,8 +49,4 @@ class MAEntityDescription(object):
         et.namespace = 'owl'
         et.name = 'Class'
         e.entityType.append(et)
-        self.val = entity_api.EntityDescription()
-        self.val.classDescription = e
-
-    def toxml(self):
-        return self.ed.toxml()
+        self.classDescription = e

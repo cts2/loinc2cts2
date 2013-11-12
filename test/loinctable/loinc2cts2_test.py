@@ -57,19 +57,19 @@ class EntityTest(unittest.TestCase):
         return entity[0]
 
     def test_convert_entity_has_designation(self):
-        entity = self._do_test_convert_entity().get_entity()
+        entity = self._do_test_convert_entity()
 
         self.assertEquals("R' wave amplitude.lead II", entity.classDescription.designation[0].value_.content()[0])
         self.assertEquals("PREFERRED", entity.classDescription.designation[0].designationRole)
 
     def test_convert_entity_has_name_namespace(self):
-        entity = self._do_test_convert_entity().get_entity()
+        entity = self._do_test_convert_entity()
 
         self.assertEquals("10014-9", entity.classDescription.entityID.name)
         self.assertEquals("loincid", entity.classDescription.entityID.namespace)
 
     def test_convert_entity_has_type(self):
-        entity = self._do_test_convert_entity().get_entity()
+        entity = self._do_test_convert_entity()
 
         type = entity.classDescription.entityType[0]
         self.assertEquals("owl", type.namespace)
@@ -77,14 +77,14 @@ class EntityTest(unittest.TestCase):
         self.assertEquals("Class", type.name)
 
     def test_convert_entity_has_alt_description_1(self):
-        entity = self._do_test_convert_entity().get_entity()
+        entity = self._do_test_convert_entity()
 
         designation = entity.classDescription.designation[1]
         self.assertEquals("R' wave Amp L-II", designation.value_.content()[0])
         self.assertEquals("ALTERNATIVE", designation.designationRole)
 
     def test_convert_entity_has_alt_description_2(self):
-        entity = self._do_test_convert_entity().get_entity()
+        entity = self._do_test_convert_entity()
 
         designation = entity.classDescription.designation[2]
         self.assertEquals("R' wave amplitude in lead II", designation.value_.content()[0])
@@ -92,12 +92,12 @@ class EntityTest(unittest.TestCase):
 
 
     def test_convert_entity_entry_state(self):
-        entity = self._do_test_convert_entity().get_entity()
+        entity = self._do_test_convert_entity()
 
         status = entity.classDescription.entryState
         self.assertEquals("ACTIVE", status)
 
     def test_convert_entity_properties(self):
-        entity = self._do_test_convert_entity().get_entity()
+        entity = self._do_test_convert_entity()
 
         self.assertTrue(len(entity.classDescription.property_) > 0)

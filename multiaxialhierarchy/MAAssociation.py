@@ -27,24 +27,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from schema.association_api import Association
+from schema.association_api import Association_
 from schema.core_api import URIAndEntityName, PredicateReference, StatementTarget
 from common.Constants import uriFor, nsFor, mahcsv
 
-class MAAssociation(object):
+class MAAssociation(Association_):
 
     def __init__(self, row, version, parent=None):
-        a = Association()
-        a.subject = URIAndEntityName()
-        a.subject.uri = uriFor(row.code)
-        a.subject.namespace = nsFor(row.code)
-        a.subject.name = str(row.code)
-        a.subject.designation = row.text
+        Association_.__init__(self)
+        self.subject = URIAndEntityName()
+        self.subject.uri = uriFor(row.code)
+        self.subject.namespace = nsFor(row.code)
+        self.subject.name = str(row.code)
+        self.subject.designation = row.text
 
-        a.predicate = PredicateReference()
-        a.predicate.uri = "http://www.w3.org/2004/02/skos/core#broaderTransitive"
-        a.predicate.namespace = "skos"
-        a.predicate.name = "broaderTransitive"
+        self.predicate = PredicateReference()
+        self.predicate.uri = "http://www.w3.org/2004/02/skos/core#broaderTransitive"
+        self.predicate.namespace = "skos"
+        self.predicate.name = "broaderTransitive"
 
         t = URIAndEntityName()
         t.uri = uriFor(row.parent)
@@ -52,12 +52,7 @@ class MAAssociation(object):
         t.name = str(row.parent)
         if parent:
             t.designation = parent.text
-        a.target.append(StatementTarget(t))
+        self.target.append(StatementTarget(t))
 
 
-        a.assertedBy = mahcsv(version)
-        self.val = a
-
-
-    def toxml(self):
-        return self.val.toxml()
+        self.assertedBy = mahcsv(version)

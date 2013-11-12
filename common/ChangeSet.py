@@ -47,10 +47,10 @@ class ChangeSetWrapper(object):
 
     def add_member(self, e):
         cr = ChangeableResource()
-        if isinstance(e.val, EntityDescription_):
-            cr.entityDescription = e.val
-        elif isinstance(e.val, Association_):
-            cr.association = e.val
+        if isinstance(e, EntityDescription_):
+            cr.entityDescription = e
+        elif isinstance(e, Association_):
+            cr.association = e
         else:
             assert False, "Unknown object type"
         cr.entryOrder = len(self.cs.member) + 1

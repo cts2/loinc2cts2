@@ -37,7 +37,8 @@ import sys, os, errno
 def _write_change_set(wrapper, output):
     uri = wrapper.get_changeset().changeSetURI
     with open(output + "/" + uri + ".xml", 'w') as the_file:
-        the_file.write(prettyxml(wrapper.toxml()))
+        #the_file.write(prettyxml(wrapper.toxml()))
+        the_file.write(wrapper.toxml())
 
 def mkdir(path):
     try:
