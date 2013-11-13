@@ -47,11 +47,12 @@ class LoincTable():
 
         count = 0
         for entity in entity_reader.read(entity_row_callback):
-            changeset.add_member(entity)
-            count += 1
-            if count > changeset_size:
-                yield changeset
-                count = 0
-                changeset = ChangeSetWrapper()
+            if entity is not None:
+                changeset.add_member(entity)
+                count += 1
+                if count > changeset_size:
+                    yield changeset
+                    count = 0
+                    changeset = ChangeSetWrapper()
 
         yield changeset

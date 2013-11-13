@@ -30,14 +30,17 @@ import argparse
 from loinctable.LoincTable import LoincTable
 from multiaxialhierarchy import MultiAxialLoinc, MAAssociation, MAEntityDescription
 from common.ChangeSet import ChangeSetWrapper
-from utils.prettyxml import prettyxml
-import sys, os, errno
+from rest import cts2_rest_client
+import sys, os, errno, itertools
 
 
-def _write_change_set(wrapper, output):
+def _write_change_set(wrapper, output, url):
     uri = wrapper.get_changeset().changeSetURI
+
+    if url is not None:
+        cts2_rest_client.put_changeset(url, wrapper)
+
     with open(output + "/" + uri + ".xml", 'w') as the_file:
-        #the_file.write(prettyxml(wrapper.toxml()))
         the_file.write(wrapper.toxml())
 
 def mkdir(path):
@@ -47,6 +50,13 @@ def mkdir(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else: raise
+
+def chunks(itr, chunk):
+    while True:
+        slice = itertools.islice(itr, chunk)
+        if not slice:
+            return
+        yield slice
 
 def main(args):
     parser = argparse.ArgumentParser(description='CTS2 LOINC Converter')
@@ -59,20 +69,30 @@ def main(args):
     args = parser.parse_args()
     output_dir = args.o
     loinc_version = args.loinc_version
+    url = args.url
+    lt = args.lt
+    ma = args.ma
 
     mkdir(output_dir)
 
-    loinc_table = LoincTable(args.lt, loinc_version)
+    changeset_size = 100
 
-    for changeset_wrapper in loinc_table.to_cts2():
-        _write_change_set(changeset_wrapper, output_dir)
+    if lt:
+        loinc_table = LoincTable(lt, loinc_version)
 
-    content = MultiAxialLoinc.MultiAxialLoinc(args.ma)
+        for changeset_wrapper in loinc_table.to_cts2(changeset_size):
+            _write_change_set(changeset_wrapper, output_dir, url)
 
-    entities = ChangeSetWrapper(map(lambda e: MAEntityDescription.MAEntityDescription(e, loinc_version), filter(lambda e:e.code.startswith('LP'), content)))
-    associations = ChangeSetWrapper(map(lambda e: MAAssociation.MAAssociationcd (e, loinc_version, content.parentOf(e)), filter(lambda e:e.parent, content)))
+    if ma:
+        multi_axial = MultiAxialLoinc.MultiAxialLoinc(ma)
 
-    map(lambda x: _write_change_set(x, output_dir), [entities, associations])
+        content_itr = multi_axial.__iter__()
+
+        for content in chunks(content_itr, changeset_size):
+            entities = ChangeSetWrapper(map(lambda e: MAEntityDescription.MAEntityDescription(e, loinc_version), filter(lambda e:e.code.startswith('LP'), content)))
+            associations = ChangeSetWrapper(map(lambda e: MAAssociation.MAAssociation(e, loinc_version, multi_axial.parentOf(e)), filter(lambda e:e.parent, content)))
+
+            map(lambda x: _write_change_set(x, output_dir, url), [entities, associations])
 
 
 if __name__ == '__main__':

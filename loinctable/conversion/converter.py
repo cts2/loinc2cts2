@@ -36,37 +36,36 @@ not_properties = {'LOINC_NUM', 'COMPONENT', 'SHORTNAME',
 
 
 def row2entity(row, code_system_version):
-    #start = time.clock()
+    try:
 
-    name = row['LOINC_NUM']
-    description = row['COMPONENT']
-    short_name = row['SHORTNAME']
-    long_common_name = row['LONG_COMMON_NAME']
-    status = row['STATUS']
-    comments = row['COMMENTS']
-    example_answers = row['EXMPL_ANSWERS']
-    example_units = row['EXAMPLE_UNITS']
-    example_ucum_units = row['EXAMPLE_UCUM_UNITS']
-    example_si_ucum_units = row['EXAMPLE_SI_UCUM_UNITS']
-    copyright = row['EXTERNAL_COPYRIGHT_NOTICE']
+        name = row['LOINC_NUM']
+        description = row['COMPONENT']
+        short_name = row['SHORTNAME']
+        long_common_name = row['LONG_COMMON_NAME']
+        status = row['STATUS']
+        comments = row['COMMENTS']
+        example_answers = row['EXMPL_ANSWERS']
+        example_units = row['EXAMPLE_UNITS']
+        example_ucum_units = row['EXAMPLE_UCUM_UNITS']
+        example_si_ucum_units = row['EXAMPLE_SI_UCUM_UNITS']
+        copyright = row['EXTERNAL_COPYRIGHT_NOTICE']
 
-    entity = EntityWrapper(name=name, code_system_version=code_system_version)
-    entity.add_designation(description)
-    entity.add_designation(short_name, False)
-    entity.add_designation(long_common_name, False)
-    entity.add_note(comments)
-    entity.add_example(example_answers)
-    entity.add_example(example_units)
-    entity.add_example(example_ucum_units)
-    entity.add_example(example_si_ucum_units)
-    entity.set_status(status)
+        entity = EntityWrapper(name=name, code_system_version=code_system_version)
+        entity.add_designation(description)
+        entity.add_designation(short_name, False)
+        entity.add_designation(long_common_name, False)
+        entity.add_note(comments)
+        entity.add_example(example_answers)
+        entity.add_example(example_units)
+        entity.add_example(example_ucum_units)
+        entity.add_example(example_si_ucum_units)
+        entity.set_status(status)
 
-    for k, v in filter(lambda (k, v): k not in not_properties and v, row.iteritems()):
-        entity.add_property(k, v)
+        for k, v in filter(lambda (k, v): k not in not_properties and v, row.iteritems()):
+            entity.add_property(k, v)
 
-    #elapsed = time.clock()
-    #elapsed = elapsed - start
-
-    #print "Time spent is: ", elapsed
+    except UnicodeDecodeError:
+        print "Error Decoding Entity text."
+        return None
 
     return entity
