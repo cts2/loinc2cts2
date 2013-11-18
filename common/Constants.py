@@ -28,14 +28,24 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 from schema import core_api
 
+owlroot = "http://www.w3.org/2002/07/owl#"
+owlns = "owl"
+
 loincroot = "http://id.loinc.org/"
 loincns = 'loincid'
 loincid = 'id/'
 lpns = 'loinclp'
 lpid = 'lpid/'
+lprns = 'loincpr'
 
 def uriFor(code):
     return loincroot + (lpid if code.startswith('LP') else loincid) + code
+
+def uriForProperty(prop):
+    return loincroot + lprns + "/" + prop
+
+def uriForOwl(name):
+    return owlroot + name
 
 def nsFor(code):
     return lpns if code.startswith('LP') else loincns

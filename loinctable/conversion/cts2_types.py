@@ -29,12 +29,13 @@
 
 
 from schema.entity_api import EntityDescription_, ClassDescription
+from schema.association_api import Association_
 from schema.codesystem_api import CodeSystemCatalogEntry_
 from schema.core_api import Example, Property, Comment, PredicateReference, ScopedEntityName, URIAndEntityName, \
     StatementTarget, Note, EntryDescription
 from model.Designation import Designation, OpaqueData
 import pyxb
-from common.Constants import uriFor, nsFor, loinccsv
+from common.Constants import uriFor, nsFor, loinccsv, mahcsv
 
 
 
@@ -102,3 +103,19 @@ class EntityWrapper(EntityDescription_):
 class CodeSystemWrapper(CodeSystemCatalogEntry_):
     def __init__(self, about, name):
         CodeSystemCatalogEntry_.__init__(self)
+
+
+class AssociationWrapper(Association_):
+
+    def __init__(self, subject_name, subject_description, code_system_version):
+        Association_.__init__(self)
+        self.subject = URIAndEntityName()
+        self.subject.uri = uriFor(subject_name)
+        self.subject.namespace = nsFor(subject_name)
+        self.subject.name = subject_name
+        self.subject.designation = subject_description
+
+        self.assertedBy = loinccsv(code_system_version)
+
+    def add_target(self, target):
+        self.target.append(target)

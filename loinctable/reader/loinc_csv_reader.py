@@ -34,9 +34,10 @@ class LoincReader:
     def __init__(self, csv_path):
         self.csv_path = csv_path
 
-    def read(self, row_callback):
+    def read(self, row_callbacks):
         with open(self.csv_path, 'rb') as csvfile:
             csvreader = csv.DictReader(csvfile, delimiter=',')
             for row in csvreader:
-                yield row_callback(row)
+                for row_callback in row_callbacks:
+                    yield row_callback(row)
 

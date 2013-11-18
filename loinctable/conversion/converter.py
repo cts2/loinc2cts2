@@ -27,17 +27,41 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 from cts2_types import *
-import time
+from schema.core_api import StatementTarget, AnonymousStatement
+from common.Constants import uriForProperty, uriForOwl, owlns, lprns
 
 not_properties = {'LOINC_NUM', 'COMPONENT', 'SHORTNAME',
                   'LONG_COMMON_NAME', 'STATUS', 'COMMENTS',
                   'EXMPL_ANSWERS', 'EXAMPLE_UNITS',
                   'EXAMPLE_UCUM_UNITS', 'EXAMPLE_SI_UCUM_UNITS'}
 
+def _create_owl_predicate(name):
+    p = PredicateReference()
+    p.name = name
+    p.uri = uriForOwl(p.name)
+    p.namespace = owlns
+    return p
+
+def _create_lnc_predicate(name):
+    p = PredicateReference()
+    p.name = name
+    p.uri = uriForProperty(p.name)
+    p.namespace = lprns
+    return p
+
+intersection_predicate = _create_owl_predicate("intersectionOf")
+hascomponent_predicate = _create_owl_predicate("hasComponent")
+somevaluesfrom_predicate = _create_owl_predicate("someValuesFrom")
+allvaluesfrom_predicate = _create_owl_predicate("allValuesFrom")
+equivalentclass_predicate = _create_owl_predicate("equivalentClass")
+hasscale_prediate = _create_lnc_predicate("hasScale")
+hassystem_prediate = _create_lnc_predicate("hasSystem")
+hastime_prediate = _create_lnc_predicate("hasTime")
+hasproperty_prediate = _create_lnc_predicate("hasProperty")
+hasmethod_prediate = _create_lnc_predicate("hasMethod")
 
 def row2entity(row, code_system_version):
     try:
-
         name = row['LOINC_NUM']
         description = row['COMPONENT']
         short_name = row['SHORTNAME']
@@ -48,6 +72,8 @@ def row2entity(row, code_system_version):
         example_units = row['EXAMPLE_UNITS']
         example_ucum_units = row['EXAMPLE_UCUM_UNITS']
         example_si_ucum_units = row['EXAMPLE_SI_UCUM_UNITS']
+
+        # TODO: Individual copyrights for Entities -- how to handle
         copyright = row['EXTERNAL_COPYRIGHT_NOTICE']
 
         entity = EntityWrapper(name=name, code_system_version=code_system_version)
@@ -69,3 +95,48 @@ def row2entity(row, code_system_version):
         return None
 
     return entity
+
+def row2association(row, code_system_version):
+    try:
+        subject = row['LOINC_NUM']
+        description = row['COMPONENT']
+
+        association = AssociationWrapper(subject, description, code_system_version)
+
+        association.predicate = equivalentclass_predicate
+
+        bnode = AnonymousStatement(predicate=intersection_predicate,
+                                   target=[
+                                       StatementTarget(_inner_bnode(hascomponent_predicate, row['COMPONENT'])),
+                                       StatementTarget(_inner_bnode(hasmethod_prediate, row['METHOD_TYP'])),
+                                       StatementTarget(_inner_bnode(hasproperty_prediate, row['PROPERTY'])),
+                                       StatementTarget(_inner_bnode(hastime_prediate, row['TIME_ASPCT'])),
+                                       StatementTarget(_inner_bnode(hassystem_prediate, row['SYSTEM'])),
+                                       StatementTarget(_inner_bnode(hasscale_prediate, row['SCALE_TYP'])),
+                                    ])
+
+        association.target.append(StatementTarget(bnode))
+
+    except UnicodeDecodeError:
+        print "Error Decoding Association text."
+        return None
+
+    return association
+
+
+def _inner_bnode(predicate, name):
+    return AnonymousStatement(predicate=intersection_predicate, target=_somevalues_allvalues(predicate, name))
+
+
+def _somevalues_allvalues(predicate, name):
+    t = URIAndEntityName()
+    t.uri = uriForProperty(name)
+    t.namespace = lprns
+    t.name = name
+
+    return [StatementTarget(AnonymousStatement(
+        predicate=predicate,
+        target=[StatementTarget(
+            AnonymousStatement(
+                predicate=p,
+                target=[StatementTarget(t)]))])) for p in [somevaluesfrom_predicate, allvaluesfrom_predicate]]

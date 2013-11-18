@@ -28,6 +28,7 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 import unittest
 import csv
+from utils.prettyxml import prettyxml
 
 from loinctable.conversion import converter
 
@@ -101,3 +102,40 @@ class EntityTest(unittest.TestCase):
         entity = self._do_test_convert_entity()
 
         self.assertTrue(len(entity.classDescription.property_) > 0)
+
+
+class AssociationTest(unittest.TestCase):
+
+    def _do_test_convert_association(self):
+        reader = TestLoincReader("../data/loinc.csv")
+
+        association = []
+        def test_row_callback(row):
+            association.append(converter.row2association(row, "244"))
+
+        reader.read(test_row_callback)
+
+        return association[0]
+
+    def test_convert_association_has_subject(self):
+        assoc = self._do_test_convert_association()
+
+        self.assertEquals("10014-9", assoc.subject.name)
+        self.assertEquals("loincid", assoc.subject.namespace)
+
+    def test_convert_association_has_target(self):
+        assoc = self._do_test_convert_association()
+
+        self.assertIsNotNone(assoc.target)
+
+    def test_convert_association_has_target(self):
+        assoc = self._do_test_convert_association()
+
+        self.assertIsNotNone(assoc.target)
+
+    def test_convert_association_has_bnode(self):
+        assoc = self._do_test_convert_association()
+
+        self.assertEquals(1, len(assoc.target))
+
+        print prettyxml(assoc.toxml())

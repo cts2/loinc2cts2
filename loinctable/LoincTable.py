@@ -43,10 +43,13 @@ class LoincTable():
         def entity_row_callback(row):
             return converter.row2entity(row, self.loinc_version)
 
+        def association_row_callback(row):
+            return converter.row2association(row, self.loinc_version)
+
         changeset = ChangeSetWrapper()
 
         count = 0
-        for entity in entity_reader.read(entity_row_callback):
+        for entity in entity_reader.read([entity_row_callback, association_row_callback]):
             if entity is not None:
                 changeset.add_member(entity)
                 count += 1
