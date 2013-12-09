@@ -26,13 +26,19 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-import sys
+import sys, os, argparse, codecs
 
+_curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
+sys.path.append(os.path.join(_curdir, '..'))
+
+from multiaxialhierarchy.MAEntityDescription import MAEntityDescription
+from multiaxialhierarchy.MAAssociation import MAAssociation
+from multiaxialhierarchy.Skipper import skip
+
+# This can be found in pyxb-CTS2
 from utils.prettyxml import prettyxml
 from common.ChangeSet import ChangeSetWrapper
-from MAEntityDescription import MAEntityDescription
-from MAAssociation import MAAssociation
-from Skipper import skip
+
 
 class MALoincRow(object):
     def __init__(self, line):
@@ -41,7 +47,7 @@ class MALoincRow(object):
 
 class MultiAxialLoinc(object):
     def __init__(self, filename):
-        self.entries = {row.code:row for row in map(MALoincRow, skip(1,open(filename)))}
+        self.entries = {row.code:row for row in map(MALoincRow, skip(1,codecs.open(filename,'r',encoding="latin-1")))}
 
     def __iter__(self):
         return self.entries.itervalues()
@@ -51,20 +57,23 @@ class MultiAxialLoinc(object):
 
 
 def main(args):
-    if len(args) in (4,5) and args[1] in ('-e', '-a'):
-        content = MultiAxialLoinc(args[2])
+    parser = argparse.ArgumentParser(description="Generate CTS2 from LOINC MultiAxial Hierarchy")
+    parser.add_argument('-e', '--entitydescriptions', action='store_true', help="Generate an EntityDescription update")
+    parser.add_argument('-a', '--associations', action='store_true', help="Generate an Associations update")
+    parser.add_argument('-p', '--prettyprint', action='store_true', help="Pretty print the result (takes time and memory)")
+    parser.add_argument("csvfile", help="Name of CSV file to parse")
+    parser.add_argument("loincver", help="LOINC Version number")
+    opts = parser.parse_args(args)
+    content = MultiAxialLoinc(opts.csvfile)
+    eds = map(lambda e: MAEntityDescription(e, opts.loincver),
+                                filter(lambda e:e.code.startswith('LP'),
+                                MultiAxialLoinc(opts.csvfile))) if opts.entitydescriptions else []
+    asss = map(lambda e: MAAssociation(e,opts.loincver,
+                                content.parentOf(e)),
+                                filter(lambda e:e.parent, MultiAxialLoinc(opts.csvfile))) if opts.associations else []
 
-        if args[1] == '-e':
-            rval = ChangeSetWrapper(map(lambda e: MAEntityDescription(e, args[3]), filter(lambda e:e.code.startswith('LP'), content)))
-        else:
-            rval = ChangeSetWrapper(map(lambda e: MAAssociation(e,args[3], content.parentOf(e)), filter(lambda e:e.parent, content)))
-        if len(args) < 5 or args[4] != '-p':
-            print rval.toxml()
-        else:
-            print prettyxml(rval)
-    else:
-        print "Usage: python MultiAxialLoinc.py (-e|-a) <Multi axial csv file> <LOINC version number>"
-
+    rval = ChangeSetWrapper(eds + asss)
+    print(prettyxml(rval) if opts.prettyprint else rval.toxml())
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])

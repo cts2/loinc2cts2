@@ -55,7 +55,7 @@ def mahcsv(version):
     rval.version = core_api.NameAndMeaningReference('LOINC_MAH_%s' % version)
     rval.version.uri= "http://umls.nlm.nih.gov/VSAB/LNCMAH%s" % version
     rval.codeSystem = core_api.CodeSystemReference('LOINC_MAH')
-    rval.codeSystem.uri= "http://umls.nlm.nih.gov/VSAB/LNCMAH"
+    rval.codeSystem.uri= "http://umls.nlm.nih.gov/SAB/LNCMAH"
     return rval
 
 def loinccsv(version):
