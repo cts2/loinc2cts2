@@ -35,13 +35,17 @@ import sys, os, errno, itertools
 
 
 def _write_change_set(wrapper, output, url):
-    uri = wrapper.get_changeset().changeSetURI
+    cs = wrapper.get_changeset()
+    uri = cs.changeSetURI
 
-    if url is not None:
-        cts2_rest_client.put_changeset(url, wrapper)
+    count = len(cs.member)
 
-    with open(output + "/" + uri + ".xml", 'w') as the_file:
-        the_file.write(wrapper.toxml())
+    if count > 0:
+        if url is not None:
+            cts2_rest_client.put_changeset(url, wrapper)
+
+        with open(output + "/" + uri + ".xml", 'w') as the_file:
+            the_file.write(wrapper.toxml())
 
 def mkdir(path):
     try:
@@ -75,7 +79,7 @@ def main(args):
 
     mkdir(output_dir)
 
-    changeset_size = 100
+    changeset_size = 1000
 
     if lt:
         loinc_table = LoincTable(lt, loinc_version)
