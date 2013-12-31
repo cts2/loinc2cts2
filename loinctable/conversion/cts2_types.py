@@ -96,7 +96,8 @@ class EntityWrapper(EntityDescription_):
             print "ERROR Loading Property: {name = '%s', value = '%s'}" % (property_name, property_value)
 
     def set_status(self, status="ACTIVE"):
-        self.classDescription.entryState = self.statuses_map[status]
+        if status in self.statuses_map:
+            self.classDescription.entryState = self.statuses_map[status]
 
 
 
