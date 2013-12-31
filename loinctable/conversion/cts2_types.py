@@ -92,7 +92,7 @@ class EntityWrapper(EntityDescription_):
             st.literal = OpaqueData(property_value)
             property.value_.append(st)
             self.classDescription.property_.append(property)
-        except pyxb.exceptions_.MixedContentError:
+        except:
             print "ERROR Loading Property: {name = '%s', value = '%s'}" % (property_name, property_value)
 
     def set_status(self, status="ACTIVE"):
